@@ -11,7 +11,7 @@ CTestTestfile.cmake
 build
 devel
 
-#-------C++ stuff-----
+#-------C++ stuff------
 # Prerequisites
 *.d
 
