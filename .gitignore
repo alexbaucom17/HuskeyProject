@@ -6,6 +6,9 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+DoxygenLayout.xml
 
 #-------ROS stuff------
 build
