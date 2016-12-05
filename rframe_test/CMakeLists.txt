@@ -49,6 +49,8 @@ SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 
+set(RFRAME_INSTALL_PREFIX "/opt/rframe/")
+
 # if the user has not provided the install prefix, set a default
 if (NOT RFRAME_INSTALL_PREFIX)
   set(RFRAME_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/../..)
