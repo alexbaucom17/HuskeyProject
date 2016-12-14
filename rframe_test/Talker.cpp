@@ -111,9 +111,13 @@ int Talker::onInitialize()
 	ConnectionOptions options;
         options.server(ConnectionOptions::ME);
         MOD_DEBUG("Initiallized");
-        if ((retval = registerWrite<std_msgs::String>(options,"/chatter")) != Error::SUCCESS)
+        /*if ((retval = registerWrite<std_msgs::String>(options,"/chatter")) != Error::SUCCESS)
         {
             MOD_CRIT("failed to open chatter");
+        }*/
+        if ((retval = registerWrite<std_msgs::Int64>(options,"/number")) != Error::SUCCESS)
+        {
+            MOD_CRIT("failed to open number");
         }
 
     }
@@ -194,12 +198,10 @@ int Talker::onOnce()
     if (periodElapsed() == true)
     {
         // perform periodic processing here
-	stringstream sstr;
-        sstr << "hello world " << counter++;
-        std_msgs::String msg;
-        msg.data = sstr.str();
+        std_msgs::Int64 msg;
+        msg.data = counter++;
 
-        MOD_INFO(msg.data);
+        MOD_INFO("Number: " << msg.data);
 
         write(msg);
     }

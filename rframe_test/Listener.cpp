@@ -197,7 +197,7 @@ int Listener::onOnce()
     if (periodElapsed() == true)
     {
         // perform periodic processing here
-        MOD_INFO("Listener exists");
+ //       MOD_INFO("Listener exists");
     }
 
     return retval;
