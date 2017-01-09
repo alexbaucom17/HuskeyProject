@@ -7,6 +7,6 @@
 <include file="$(find husky_viz)/launch/view_robot.launch"/>
 
 #start navigation
-<include file="$(find husky_navigation)/launch/gmapping_demo.launch"/>
+<include file="$(find husky_navigation)/launch/amcl_demo.launch"/>
 
 </launch>
