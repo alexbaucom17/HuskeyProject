@@ -1,0 +1,14 @@
+<launch>
+
+#start rframe communication
+#PROBBLY NEED ROS JADE FOR THIS TO WORK
+#MIGHT NEED TO PORT BASIC HUSKY NAV TO JADE
+<node name="StartRframe" pkg="rf_comm" type="runRframe.py" output="screen" />
+
+#start rviz
+<include file="$(find husky_viz)/launch/view_robot.launch"/>
+
+#start navigation
+<include file="$(find husky_navigation)/launch/gmapping_demo.launch"/>
+
+</launch>
