@@ -70,6 +70,8 @@ public:
     virtual int onShutdown();
     virtual int onOnce();
 
+	rframe::ConnectionOptions hokReadOptions;
+
 private:
 	int counter;
 

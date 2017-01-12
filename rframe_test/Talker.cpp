@@ -44,9 +44,11 @@
 #include "Talker.h"
 #include <common/ModuleVersion.h>
 #include <std_msgs/std_msgs_gencpp_Library.h>
+#include <rctamagic/rctamagic_Library.h>
 
 using namespace std;
 using namespace rframe;
+using namespace rctamagic;
 
 
 extern "C"
@@ -119,6 +121,22 @@ int Talker::onInitialize()
         {
             MOD_CRIT("failed to open number");
         }
+
+
+		//registering to read Hokuyo data
+		//readoptions initialized in Talker.h
+		hokReadOptions.server(ConnectionOptions::NOTME); 
+		hokReadOptions.queueStyle(ConnectionOptions::LATEST); 
+		if((retval = registerRead<rctamagic::HOKDATA>(hokReadOptions, rctamagic::HOKDATA_NAME)) != Error::SUCCESS) { 
+		
+		cout << "failed to open hokdata reader " << ERRSTR(retval) << endl; 	
+		MOD_CRIT("failed to open hokdata reader"); 
+ 
+		} else { 
+			MOD_INFO("Talker registered for hokdata reading"); 
+		}
+
+
 
     }
 
@@ -204,6 +222,32 @@ int Talker::onOnce()
         MOD_INFO("Number: " << msg.data);
 
         write(msg);
+
+
+		//Get LIDAR data
+		std::shared_ptr<MessageBase> hokdataMsg; 
+		int hokdata_retval = Error::SUCCESS; 
+
+		if((hokdata_retval = read(hokReadOptions, hokdataMsg)) != Error::SUCCESS) 
+		{ 
+			if(hokdata_retval == Error::NO_DATA_READY) 
+			{ 
+				cout << "no hok data ready" << endl; 
+			} 
+			else 
+			{ 
+				cout << "failed to read hokdata buffer" << endl; 
+			}
+		} 
+		else 
+		{ 
+			Message<rctamagic::HOKDATA> * hokData; 
+			hokData = static_cast<Message<rctamagic::HOKDATA>*>(hokdataMsg.get()); 
+
+			rctamagic::HOKDATA &hokdataRef = hokData->payload(); 
+		}
+
+
     }
 
     return retval;
