@@ -245,6 +245,9 @@ int Talker::onOnce()
 			hokData = static_cast<Message<rctamagic::HOKDATA>*>(hokdataMsg.get()); 
 
 			rctamagic::HOKDATA &hokdataRef = hokData->payload(); 
+
+			cout<<"Printing HOKDATA"<<endl;
+			cout<<hokdataRef.toStr(true)<<endl;
 		}
 
 
