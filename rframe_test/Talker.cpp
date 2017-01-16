@@ -44,7 +44,7 @@
 #include "Talker.h"
 #include <common/ModuleVersion.h>
 #include <std_msgs/std_msgs_gencpp_Library.h>
-#include <rctamagic/rctamagic_Library.h>
+
 
 using namespace std;
 using namespace rframe;
@@ -110,30 +110,44 @@ int Talker::onInitialize()
     if ((retval = MessagingClient::onInitialize()) == Error::SUCCESS)
     {
         // register to server/publish data here
-	ConnectionOptions options;
+		/*ConnectionOptions options;
         options.server(ConnectionOptions::ME);
         MOD_DEBUG("Initiallized");
-        /*if ((retval = registerWrite<std_msgs::String>(options,"/chatter")) != Error::SUCCESS)
+        if ((retval = registerWrite<std_msgs::String>(options,"/chatter")) != Error::SUCCESS)
         {
             MOD_CRIT("failed to open chatter");
-        }*/
+        }
         if ((retval = registerWrite<std_msgs::Int64>(options,"/number")) != Error::SUCCESS)
         {
             MOD_CRIT("failed to open number");
-        }
+        }*/
+
 
 
 		//registering to read Hokuyo data
 		//readoptions initialized in Talker.h
 		hokReadOptions.server(ConnectionOptions::NOTME); 
 		hokReadOptions.queueStyle(ConnectionOptions::LATEST); 
-		if((retval = registerRead<rctamagic::HOKDATA>(hokReadOptions, rctamagic::HOKDATA_NAME)) != Error::SUCCESS) { 
+		if((retval = registerRead<>(hokReadOptions, rctamagic::HOKDATA_NAME, &Talker::hokdataCallback,this)) != Error::SUCCESS) { 
 		
-		cout << "failed to open hokdata reader " << ERRSTR(retval) << endl; 	
-		MOD_CRIT("failed to open hokdata reader"); 
+			cout << "failed to open hokdata reader " << ERRSTR(retval) << endl; 	
+			MOD_CRIT("failed to open hokdata reader"); 
  
 		} else { 
 			MOD_INFO("Talker registered for hokdata reading"); 
+		}
+
+
+		//register to read navdata
+		rframe::ConnectionOptions navdata2ReadOptions; 
+		navdata2ReadOptions.pollPeriod((double) 1.0); 
+    	if((retval = registerRead<Talker,NAVDATA2>(navdata2ReadOptions, NAVDATA2_NAME, &Talker::navdata2Callback,this)) != Error::SUCCESS) 
+		{ 
+			cout << "failed to open navdata2 read callback " << ERRSTR(retval) << endl; 
+			MOD_CRIT("failed to open navdata2 read callback"); 
+			//exit(-5); 
+	    } else { 
+			MOD_INFO("Talker registered for navdata reading"); 
 		}
 
 
@@ -216,16 +230,16 @@ int Talker::onOnce()
     if (periodElapsed() == true)
     {
         // perform periodic processing here
-        std_msgs::Int64 msg;
+        /*std_msgs::Int64 msg;
         msg.data = counter++;
 
         MOD_INFO("Number: " << msg.data);
 
-        write(msg);
+        write(msg);*/
 
 
 		//Get LIDAR data
-		std::shared_ptr<MessageBase> hokdataMsg; 
+		/*std::shared_ptr<MessageBase> hokdataMsg; 
 		int hokdata_retval = Error::SUCCESS; 
 
 		if((hokdata_retval = read(hokReadOptions, hokdataMsg)) != Error::SUCCESS) 
@@ -248,10 +262,30 @@ int Talker::onOnce()
 
 			cout<<"Printing HOKDATA"<<endl;
 			cout<<hokdataRef.toStr(true)<<endl;
-		}
+		}*/
+
+		MOD_INFO("Talker once called");
 
 
     }
 
     return retval;
 }
+
+
+void Talker::navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> & msg) { 
+	my_navdata2_old = my_navdata2; 
+	my_navdata2 = *msg; 
+	MOD_INFO("NAVDATA recieved");
+	return; 
+}
+
+
+
+void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & msg) { 
+	my_hokdata = *msg; 
+	MOD_INFO("HOKDATA recieved");
+	return; 
+}
+
+

@@ -46,6 +46,7 @@
 
 #include <messaging/MessagingClient.h>
 #include <common/Log.h>
+#include <rctamagic/rctamagic_Library.h>
 
 
 
@@ -74,6 +75,15 @@ public:
 
 private:
 	int counter;
+	void navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> & msg);
+	/** navdata2 msg holder */
+    rctamagic::NAVDATA2 my_navdata2; 
+    /** previous navdata2 msg holder */
+    rctamagic::NAVDATA2 my_navdata2_old; 
+
+	/** hokdata msg holder */
+    rctamagic::HOKDATA my_hokdata; 
+	void hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & msg);
 
 };
 
