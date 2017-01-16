@@ -44,6 +44,8 @@
 #include "Talker.h"
 #include <common/ModuleVersion.h>
 #include <std_msgs/std_msgs_gencpp_Library.h>
+#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/LaserScan.h>
 
 
 using namespace std;
@@ -125,7 +127,7 @@ int Talker::onInitialize()
 
 
 		//registering to read Hokuyo data
-		//readoptions initialized in Talker.h
+		rframe::ConnectionOptions hokReadOptions;
 		hokReadOptions.server(ConnectionOptions::NOTME); 
 		hokReadOptions.queueStyle(ConnectionOptions::LATEST); 
 		if((retval = registerRead<>(hokReadOptions, rctamagic::HOKDATA_NAME, &Talker::hokdataCallback,this)) != Error::SUCCESS) { 
@@ -149,6 +151,21 @@ int Talker::onInitialize()
 	    } else { 
 			MOD_INFO("Talker registered for navdata reading"); 
 		}
+
+
+	    ConnectionOptions Odom_options;
+        Odom_options.server(ConnectionOptions::ME);
+		if ((retval = registerWrite<nav_msgs::Odometry>(Odom_options,"/rframe_odom")) != Error::SUCCESS)
+        {
+            MOD_CRIT("Talker failed to open rframe_odom");
+        }
+
+		ConnectionOptions Scan_options;
+        Scan_options.server(ConnectionOptions::ME);
+		if ((retval = registerWrite<sensor_msgs::LaserScan>(Scan_options,"/rframe_scan")) != Error::SUCCESS)
+        {
+            MOD_CRIT("Talker failed to open rframe_scan");
+        }
 
 
 
@@ -273,10 +290,36 @@ int Talker::onOnce()
 }
 
 
-void Talker::navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> & msg) { 
-	my_navdata2_old = my_navdata2; 
+void Talker::navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> & msg) {  
 	my_navdata2 = *msg; 
 	MOD_INFO("NAVDATA recieved");
+
+	//Trasfer to ros msg and publish
+	nav_msgs::Odometry odom;
+    odom.header.stamp.sec = my_navdata2.gmtSec;
+	odom.header.stamp.nsec = my_navdata2.gmtMSec*1000;
+    odom.header.frame_id = "odom";
+
+    //set the position
+    odom.pose.pose.position.x = my_navdata2.tranAbs.x;
+    odom.pose.pose.position.y = my_navdata2.tranAbs.y;
+    odom.pose.pose.position.z = my_navdata2.tranAbs.z;
+    odom.pose.pose.orientation.w = my_navdata2.rotAbs.s;
+	odom.pose.pose.orientation.x = my_navdata2.rotAbs.x;
+	odom.pose.pose.orientation.y = my_navdata2.rotAbs.y;
+	odom.pose.pose.orientation.z = my_navdata2.rotAbs.z;
+
+    //set the velocity
+    odom.child_frame_id = "base_link";
+    odom.twist.twist.linear.x = my_navdata2.tranVel.x;
+    odom.twist.twist.linear.y = my_navdata2.tranVel.y;
+	odom.twist.twist.linear.z = my_navdata2.tranVel.z;
+    odom.twist.twist.angular.x = my_navdata2.rpyRates.r;
+	odom.twist.twist.angular.y = my_navdata2.rpyRates.p;
+	odom.twist.twist.angular.z = my_navdata2.rpyRates.y;
+
+	write(odom);
+
 	return; 
 }
 
@@ -285,6 +328,32 @@ void Talker::navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> &
 void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & msg) { 
 	my_hokdata = *msg; 
 	MOD_INFO("HOKDATA recieved");
+
+	
+	unsigned int num_readings = my_hokdata.relPoints_length;
+	double laser_frequency = 10; //???? Look this up
+
+	//populate the LaserScan message
+    sensor_msgs::LaserScan scan;
+    scan.header.stamp.sec = 0; //Need to be filled in by ROS probably?
+	scan.header.stamp.nsec = 0;
+    scan.header.frame_id = "laser_frame";
+    scan.angle_min = -1.57; //?????
+    scan.angle_max = 1.57; //???????
+    scan.angle_increment = 3.14 / num_readings; //???????
+    scan.time_increment = (1 / laser_frequency) / (num_readings);
+    scan.range_min = 0.0; //????????
+    scan.range_max = 100.0; //????????
+
+    scan.ranges.resize(num_readings);
+    scan.intensities.resize(num_readings);
+    for(unsigned int i = 0; i < num_readings; ++i){
+      scan.ranges[i] = my_hokdata.ranges[i];
+      scan.intensities[i] = my_hokdata.intensities[i];
+    }
+
+	write(scan);
+
 	return; 
 }
 
