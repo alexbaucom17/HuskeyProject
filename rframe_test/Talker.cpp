@@ -329,21 +329,20 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
 	my_hokdata = *msg; 
 	MOD_INFO("HOKDATA recieved");
 
-	
 	unsigned int num_readings = my_hokdata.relPoints_length;
-	double laser_frequency = 10; //???? Look this up
 
 	//populate the LaserScan message
+	// details from https://www.hokuyo-aut.jp/02sensor/07scanner/utm_30lx_ew.html
     sensor_msgs::LaserScan scan;
     scan.header.stamp.sec = 0; //Need to be filled in by ROS probably?
 	scan.header.stamp.nsec = 0;
     scan.header.frame_id = "laser_frame";
-    scan.angle_min = -1.57; //?????
-    scan.angle_max = 1.57; //???????
-    scan.angle_increment = 3.14 / num_readings; //???????
-    scan.time_increment = (1 / laser_frequency) / (num_readings);
-    scan.range_min = 0.0; //????????
-    scan.range_max = 100.0; //????????
+    scan.angle_min = -(270/2) * (3.14159/360);
+    scan.angle_max = (270/2) * (3.14159/360);
+    scan.angle_increment = 0.25 * (3.14159/360); 
+    scan.time_increment = (0.025) /1440; 
+    scan.range_min = 0.1; 
+    scan.range_max = 60.0;
 
     scan.ranges.resize(num_readings);
     scan.intensities.resize(num_readings);
