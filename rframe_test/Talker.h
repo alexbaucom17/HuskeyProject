@@ -47,6 +47,7 @@
 #include <messaging/MessagingClient.h>
 #include <common/Log.h>
 #include <rctamagic/rctamagic_Library.h>
+#include <worldmodel/interfaces/WorldModelInterface.h>
 
 
 /**
@@ -82,6 +83,14 @@ private:
 	/** hokdata msg holder */
     rctamagic::HOKDATA my_hokdata; 
 	void hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & msg);
+
+
+	/** world model interface */
+    worldmodel::WorldModelInterface gotoWm;
+	double XOdom; 
+    double YOdom; 
+    double ThetaOdom;
+
 
 };
 

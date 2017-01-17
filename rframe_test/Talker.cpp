@@ -52,6 +52,11 @@ using namespace std;
 using namespace rframe;
 using namespace rctamagic;
 
+using namespace worldmodel;
+using namespace worldmodel::metric::datatypes;
+using namespace worldmodel::selfinfo::datatypes;
+using namespace worldmodel::semantic::datatypes;
+
 
 extern "C"
 {
@@ -72,7 +77,7 @@ extern "C"
 }
 
 
-Talker::Talker()
+Talker::Talker() : gotoWm("Talker")
 {
     // set module base parameters here
     loopPeriod(1.0);
@@ -280,6 +285,26 @@ int Talker::onOnce()
 			cout<<"Printing HOKDATA"<<endl;
 			cout<<hokdataRef.toStr(true)<<endl;
 		}*/
+
+
+		//Try a different method of getting odom
+		XOdom = 0.0; 
+		YOdom = 0.0; 
+		ThetaOdom = 0.0; 
+
+		{
+			rframe::ScopedObject<worldmodel::SelfBase> self;
+		
+			if(gotoWm.updateSelfBase(self) == rframe::Error::SUCCESS) {
+				XOdom = self->relPose().translation().x();
+				YOdom = self->relPose().translation().y();
+				ThetaOdom = self->relRpy().yaw();
+
+				MOD_INFO("Odom updated. X: "<<XOdom<<", Y: "<<YOdom<<", A: "<<ThetaOdom<<endl);
+
+		   	}
+		}
+		
 
 		MOD_INFO("Talker once called");
 
