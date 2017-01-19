@@ -24,7 +24,17 @@ public:
 	new_msg.header.stamp = ros::Time::now(); 
     odom_pub_.publish(new_msg);
 
-	//TODO add tf broadcaster
+	//tf broadcaster
+	geometry_msgs::TransformStamped odom_trans;
+    odom_trans.header.stamp = ros::Time::now();
+    odom_trans.header.frame_id = "odom";
+    odom_trans.child_frame_id = "base_link";
+    odom_trans.transform.translation.x = msg.pose.pose.position.x;
+	odom_trans.transform.translation.y = msg.pose.pose.position.y;
+	odom_trans.transform.translation.z = 0.0;
+	odom_trans.transform.rotation = msg.pose.pose.orientation;
+	//send the transform
+    odom_broadcaster_.sendTransform(odom_trans);
 
   }
 
@@ -43,6 +53,7 @@ private:
   ros::Publisher scan_pub_;
   ros::Subscriber scan_sub_; 
   ros::Time current_time_;
+  tf::TransformBroadcaster odom_broadcaster_;
 
 
 };//End of class SubscribeAndPublish

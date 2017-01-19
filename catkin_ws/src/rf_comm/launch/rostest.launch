@@ -1,6 +1,6 @@
 <launch>
 
 <node name="listener" pkg="rf_comm" type="rframe_listener.py" output="screen" />
-<node name="talker" pkg="rf_comm" type="rframe_talker" output="screen" />
+<node name="talker" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
 </launch>
