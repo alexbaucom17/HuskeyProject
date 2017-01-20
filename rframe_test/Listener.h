@@ -46,6 +46,7 @@
 
 #include <messaging/MessagingClient.h>
 #include <common/Log.h>
+#include <geometry_msgs/geometry_msgs_gencpp_Library.h>
 
 
 
@@ -69,8 +70,11 @@ public:
     virtual int onStop();
     virtual int onShutdown();
     virtual int onOnce();
+	void cmdvelCallback(const std::shared_ptr<geometry_msgs::Twist const> & msg);
 
 private:
+	geometry_msgs::Twist cmd_vel;
+	double vx, va, vr, vl;
 
 
 };

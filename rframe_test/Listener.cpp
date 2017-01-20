@@ -43,10 +43,11 @@
 
 #include "Listener.h"
 #include <common/ModuleVersion.h>
-#include <std_msgs/std_msgs_gencpp_Library.h>
 
 using namespace std;
 using namespace rframe;
+
+#define WHEEL_WIDTH 0.555 //meters
 
 
 extern "C"
@@ -127,7 +128,7 @@ int Listener::onStart()
 
     // register to read/subscribe to data here
 
-    ConnectionOptions options;
+    /*ConnectionOptions options;
     options.server(ConnectionOptions::ME);
 
     // register a callback to receive the data
@@ -137,7 +138,21 @@ int Listener::onStart()
     {
         MOD_INFO("I heard: [" << msg->data << "] from: " << base.commSrc());
     }   
-    );
+    );*/
+
+	//register to read navdata
+	rframe::ConnectionOptions cmdvelReadOptions;
+	cmdvelReadOptions.server(ConnectionOptions::ME); 
+    if((retval = registerRead<>(cmdvelReadOptions, "/cmd_vel", &Listener::cmdvelCallback,this)) != Error::SUCCESS) 
+	{ 
+		cout << "failed to open cmdvel read callback " << ERRSTR(retval) << endl; 
+		MOD_CRIT("failed to open cmdvel read callback"); 
+	}
+	else
+	{ 
+		MOD_INFO("Listener registered for cmdvel reading"); 
+	}
+
 
     if (retval == Error::SUCCESS)
     {
@@ -197,8 +212,31 @@ int Listener::onOnce()
     if (periodElapsed() == true)
     {
         // perform periodic processing here
- //       MOD_INFO("Listener exists");
+        MOD_INFO("Listener exists");
     }
 
     return retval;
+}
+
+
+void Listener::cmdvelCallback(const std::shared_ptr<geometry_msgs::Twist const> & msg)
+{
+	//grab desired velocity info
+	cmd_vel = *msg;
+	MOD_INFO("cmd_vel recieved");
+	vx = cmd_vel.linear.x;
+	va = cmd_vel.angular.z;
+
+	//figure out how fast our wheels need to go
+	vr = vx + va*WHEEL_WIDTH/2;
+	vl = vx - va*WHEEL_WIDTH/2;
+
+	//We need to figure out what units the input to the motor command are. 
+	//Do we need to give rad/s? Or some sort of other power units?
+	//Are the motors speed controlled (I would assume so) or do we need a simple PID controller in here
+
+	//Possibly do more calculations here
+
+	//Send motor commands
+
 }
