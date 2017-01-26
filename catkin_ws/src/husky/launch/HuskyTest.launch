@@ -6,13 +6,13 @@
   <!-- start rviz -->
   <include file="$(find husky_viz)/launch/view_robot.launch"/>
 
-  <!--- Run gmapping -->
-  <include file="$(find husky_navigation)/launch/gmapping.launch" />
-
   <!--- Run Move Base -->
-  <include file="$(find husky_navigation)/launch/move_base.launch" />
+  <include file="$(find husky_navigation)/launch/move_base_mapless_demo.launch" />
 
   <!-- start simple behavior -->
   <node name="behavior" pkg="husky" type="simpleBehavior.py" output="screen" />
+
+  <!-- start sensor bridge -->
+  <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
 </launch>

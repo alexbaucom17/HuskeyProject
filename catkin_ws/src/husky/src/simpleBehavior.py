@@ -23,7 +23,7 @@ def run_node():
 	mb_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
 	mb_client.wait_for_server() 
 
-	while not rospy.is_shutdown():
+	while not rospy.is_shutdown():	
 
 		#Create goal
 		actionGoal = MoveBaseGoal()
