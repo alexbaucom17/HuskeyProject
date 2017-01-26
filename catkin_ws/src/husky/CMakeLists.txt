@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -131,6 +132,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(husky_tf_publisher src/husky_tf_publisher.cpp)
+add_executable(cmdvelTest2 src/cmdvelTest2.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -138,6 +140,10 @@ add_executable(husky_tf_publisher src/husky_tf_publisher.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(husky_tf_publisher
+   ${catkin_LIBRARIES}
+ )
+
+target_link_libraries(cmdvelTest2
    ${catkin_LIBRARIES}
  )
 
