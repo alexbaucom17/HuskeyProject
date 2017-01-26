@@ -145,6 +145,7 @@ int Talker::onInitialize()
 		}
 
 
+/*
 		//register to read navdata
 		rframe::ConnectionOptions navdata2ReadOptions; 
 		navdata2ReadOptions.pollPeriod((double) 1.0); 
@@ -157,6 +158,8 @@ int Talker::onInitialize()
 			MOD_INFO("Talker registered for navdata reading"); 
 		}
 
+*/
+
 
 	    ConnectionOptions Odom_options;
         Odom_options.server(ConnectionOptions::ME);
@@ -164,6 +167,7 @@ int Talker::onInitialize()
         {
             MOD_CRIT("Talker failed to open rframe_odom");
         }
+
 
 		ConnectionOptions Scan_options;
         Scan_options.server(ConnectionOptions::ME);
@@ -296,11 +300,35 @@ int Talker::onOnce()
 			rframe::ScopedObject<worldmodel::SelfBase> self;
 		
 			if(gotoWm.updateSelfBase(self) == rframe::Error::SUCCESS) {
-				XOdom = self->relPose().translation().x();
-				YOdom = self->relPose().translation().y();
-				ThetaOdom = self->relRpy().yaw();
+				XOdom = self->absPose().translation().x();
+				YOdom = self->absPose().translation().y();
+				ThetaOdom = self->absRpy().yaw();
 
-				MOD_INFO("Odom updated. X: "<<XOdom<<", Y: "<<YOdom<<", A: "<<ThetaOdom<<endl);
+				MOD_INFO("Odom updated. X: "<<XOdom<<", Y: "<<YOdom<<", A: "<<ThetaOdom);
+                               nav_msgs::Odometry odom;
+                                 odom.header.stamp.sec = 0;
+        odom.header.stamp.nsec = 0;
+    odom.header.frame_id = "odom";
+
+    //set the position
+    odom.pose.pose.position.x = XOdom;
+    odom.pose.pose.position.y = YOdom;
+    odom.pose.pose.position.z = 0;
+    odom.pose.pose.orientation.w = 1;
+        odom.pose.pose.orientation.x = 2;
+        odom.pose.pose.orientation.y = 3;
+        odom.pose.pose.orientation.z = 2;
+
+    //set the velocity
+    odom.child_frame_id = "base_link";
+    odom.twist.twist.linear.x = 1;
+    odom.twist.twist.linear.y = 1;
+        odom.twist.twist.linear.z = 1;
+    odom.twist.twist.angular.x = 1;
+        odom.twist.twist.angular.y = 1;
+        odom.twist.twist.angular.z = 1;
+
+        write(odom);
 
 		   	}
 		}

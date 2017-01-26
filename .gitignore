@@ -10,6 +10,8 @@ CPackConfig.cmake
 CPackSourceConfig.cmake
 DoxygenLayout.xml
 
+#-------msgxml stuff----
+msgxml
 #-------ROS stuff------
 build
 devel
