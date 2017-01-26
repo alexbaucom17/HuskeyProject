@@ -3,16 +3,16 @@
   <!-- start rframe communication -->
   <!--<node name="StartRframe" pkg="rf_comm" type="runRframe.py" output="screen" />-->
 
-  <!-- start rviz -->
-  <include file="$(find husky_viz)/launch/view_robot.launch"/>
+  <!-- start sensor bridge -->
+  <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
-  <!--- Run Move Base -->
+  <!--- start move base -->
   <include file="$(find husky_navigation)/launch/move_base_mapless_demo.launch" />
 
   <!-- start simple behavior -->
   <node name="behavior" pkg="husky" type="simpleBehavior.py" output="screen" />
 
-  <!-- start sensor bridge -->
-  <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
+  <!-- start rviz -->
+  <include file="$(find husky_viz)/launch/view_robot.launch"/>
 
 </launch>
