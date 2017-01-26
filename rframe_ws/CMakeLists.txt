@@ -78,6 +78,12 @@ target_link_libraries(Talker ${RFRAME_LIBS}
 )
 install(TARGETS Talker DESTINATION lib )
 
+add_library(TestAction_nowm SHARED TestAction_nowm.cpp)
+target_link_libraries(TestAction_nowm ${RFRAME_LIBS} 
+)
+install(TARGETS TestAction_nowm DESTINATION lib )
+
+
 # auto added by rframeCreateModule.rb
 
 add_library(Listener SHARED Listener.cpp)
@@ -88,7 +94,7 @@ install(TARGETS Listener DESTINATION lib )
 
 install(FILES talker.cfg DESTINATION bin/config)
 install(FILES listener.cfg DESTINATION bin/config)
-
+install(FILES GotoActionTest.cfg DESTINATION bin/config)
 
 # this function imports ros .msg and .srv into rframe xml. In this case it searches the ros jade install, and outputs the xml and rframe cmake commands to the "msgxml" subdirectory of this project
 ros_code_gen_search(SEARCH_PATH /opt/ros/jade DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/msgxml)
