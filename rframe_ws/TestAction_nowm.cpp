@@ -113,11 +113,13 @@ int TestAction_nowm::onInitialize()
         // load config here
 
         // register to server/publish data here
-}
-        else 
-            {
-              cout << "initialization failed"<<endl;
-              }
+		MOD_INFO("Action Base Initialized")
+
+	}
+    else 
+    {
+  		cout << "initialization failed"<<endl;
+  	}
 
     MOD_EXIT(INF);
 
@@ -152,15 +154,10 @@ int TestAction_nowm::onStart()
 
     if (retval == Error::SUCCESS)
     {
-        retval = ActionBase::onStart();
- //       plat::mobility::Teleop teleop;
-            
-                // turn to the left
- //               teleop.leftTrack(0.1);
-  //              teleop.rightTrack(0.1);
-   //     cout << "teleop cmd sent"<<endl;
-    //    MOD_INFO("vel set")
-	    }
+		//Initialize action base        
+		retval = ActionBase::onStart();
+		MOD_INFO("Action Base started")
+	}
 
     MOD_EXIT(INF);
 
@@ -214,43 +211,13 @@ int TestAction_nowm::onOnce()
     // check to see if period elapsed
     if (periodElapsed() == true)
     {
-        // call base class, this will execute the state machine and send status
-        // NOTE: there should really be no need to overload once(), as periodic processing
-        // can be handled in the onXXX methods
-       cout << "before" << endl; 
-       
-                   ActionBase::onOnce();
-       cout <<"after"<< endl;
-       // retval = ActionBase::onRun(true);
-                  
-}
+        //Update action base to run motors
+      	ActionBase::onOnce();                  
+	}
 
     return retval;
 }
-
-//int TestAction_nowm::onRun(bool newCommandFlag)
-//{
-  //  cout<<"now on run"<<endl;
-   // int retval = Error::SUCCESS;
-
-   // MOD_ENTER(INF);
-    
-    //if ((retval = ActionBase::onRun(newCommandFlag)) == Error::SUCCESS)
-    //{
-
-         // if (baseStatus.runState() < worldmodel::selfinfo::action::Status::SUCCESS)
-        //{
       
-     //         if ((retval = sendCommand(teleop)) != Error::SUCCESS)
-       //         {
-         //           setError("failed to write teleop cmd");
-           //     }
-      //      }
-       // }    
-    
-    //return retval;
-//}
-       
 
 
 void TestAction_nowm::cmdvelCallback(const std::shared_ptr<geometry_msgs::Twist const> & msg)
@@ -264,20 +231,13 @@ void TestAction_nowm::cmdvelCallback(const std::shared_ptr<geometry_msgs::Twist 
         //figure out how fast our wheels need to go
         vr = vx + va*WHEEL_WIDTH/2;
         vl = vx - va*WHEEL_WIDTH/2;
-          plat::mobility::Teleop teleop;
-            
-                // turn to the left
-                teleop.leftTrack(vl);
-                teleop.rightTrack(vr);
-              sendCommand(teleop);
+		
+		//Send motor commands
+		plat::mobility::Teleop teleop;		
+		teleop.leftTrack(vl);
+		teleop.rightTrack(vr);
+		sendCommand(teleop);
 
-        //We need to figure out what units the input to the motor command are. 
-        //Do we need to give rad/s? Or some sort of other power units?
-        //Are the motors speed controlled (I would assume so) or do we need a simple PID controller in here
-
-        //Possibly do more calculations here
-
-        //Send motor commands
 
 }
 

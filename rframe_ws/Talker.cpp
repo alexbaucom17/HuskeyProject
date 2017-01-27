@@ -81,7 +81,6 @@ Talker::Talker() : gotoWm("Talker")
 {
     // set module base parameters here
     loopPeriod(1.0);
-    counter = 0;
 }
 
 
@@ -117,19 +116,6 @@ int Talker::onInitialize()
     if ((retval = MessagingClient::onInitialize()) == Error::SUCCESS)
     {
         // register to server/publish data here
-		/*ConnectionOptions options;
-        options.server(ConnectionOptions::ME);
-        MOD_DEBUG("Initiallized");
-        if ((retval = registerWrite<std_msgs::String>(options,"/chatter")) != Error::SUCCESS)
-        {
-            MOD_CRIT("failed to open chatter");
-        }
-        if ((retval = registerWrite<std_msgs::Int64>(options,"/number")) != Error::SUCCESS)
-        {
-            MOD_CRIT("failed to open number");
-        }*/
-
-
 
 		//registering to read Hokuyo data
 		rframe::ConnectionOptions hokReadOptions;
@@ -143,22 +129,6 @@ int Talker::onInitialize()
 		} else { 
 			MOD_INFO("Talker registered for hokdata reading"); 
 		}
-
-
-/*
-		//register to read navdata
-		rframe::ConnectionOptions navdata2ReadOptions; 
-		navdata2ReadOptions.pollPeriod((double) 1.0); 
-    	if((retval = registerRead<Talker,NAVDATA2>(navdata2ReadOptions, NAVDATA2_NAME, &Talker::navdata2Callback,this)) != Error::SUCCESS) 
-		{ 
-			cout << "failed to open navdata2 read callback " << ERRSTR(retval) << endl; 
-			MOD_CRIT("failed to open navdata2 read callback"); 
-			//exit(-5); 
-	    } else { 
-			MOD_INFO("Talker registered for navdata reading"); 
-		}
-
-*/
 
 
 	    ConnectionOptions Odom_options;
@@ -255,128 +225,50 @@ int Talker::onOnce()
     // check to see if period elapsed
     if (periodElapsed() == true)
     {
-        // perform periodic processing here
-        /*std_msgs::Int64 msg;
-        msg.data = counter++;
-
-        MOD_INFO("Number: " << msg.data);
-
-        write(msg);*/
-
-
-		//Get LIDAR data
-		/*std::shared_ptr<MessageBase> hokdataMsg; 
-		int hokdata_retval = Error::SUCCESS; 
-
-		if((hokdata_retval = read(hokReadOptions, hokdataMsg)) != Error::SUCCESS) 
-		{ 
-			if(hokdata_retval == Error::NO_DATA_READY) 
-			{ 
-				cout << "no hok data ready" << endl; 
-			} 
-			else 
-			{ 
-				cout << "failed to read hokdata buffer" << endl; 
-			}
-		} 
-		else 
-		{ 
-			Message<rctamagic::HOKDATA> * hokData; 
-			hokData = static_cast<Message<rctamagic::HOKDATA>*>(hokdataMsg.get()); 
-
-			rctamagic::HOKDATA &hokdataRef = hokData->payload(); 
-
-			cout<<"Printing HOKDATA"<<endl;
-			cout<<hokdataRef.toStr(true)<<endl;
-		}*/
-
-
-		//Try a different method of getting odom
-		XOdom = 0.0; 
-		YOdom = 0.0; 
-		ThetaOdom = 0.0; 
+        // perform periodic processing here 
 
 		{
 			rframe::ScopedObject<worldmodel::SelfBase> self;
 		
 			if(gotoWm.updateSelfBase(self) == rframe::Error::SUCCESS) {
-				XOdom = self->absPose().translation().x();
-				YOdom = self->absPose().translation().y();
-				ThetaOdom = self->absRpy().yaw();
 
-				MOD_INFO("Odom updated. X: "<<XOdom<<", Y: "<<YOdom<<", A: "<<ThetaOdom);
-                               nav_msgs::Odometry odom;
-                                 odom.header.stamp.sec = 0;
-        odom.header.stamp.nsec = 0;
-    odom.header.frame_id = "odom";
+				MOD_INFO("Odom recieved");
+               	nav_msgs::Odometry odom;
+				odom.header.stamp.sec = 0;
+				odom.header.stamp.nsec = 0;
+				odom.header.frame_id = "odom";
 
-    //set the position
-    odom.pose.pose.position.x = XOdom;
-    odom.pose.pose.position.y = YOdom;
-    odom.pose.pose.position.z = 0;
-    odom.pose.pose.orientation.w = 1;
-        odom.pose.pose.orientation.x = 2;
-        odom.pose.pose.orientation.y = 3;
-        odom.pose.pose.orientation.z = 2;
+				//set the position
+				odom.pose.pose.position.x = self->absPose().translation().x();
+				odom.pose.pose.position.y = self->absPose().translation().y();
+				odom.pose.pose.position.z = self->absPose().translation().z();
+				odom.pose.pose.orientation.w = self->velocities().rotation().w();
+				odom.pose.pose.orientation.x = self->velocities().rotation().x();
+				odom.pose.pose.orientation.y = self->velocities().rotation().y();
+				odom.pose.pose.orientation.z = self->velocities().rotation().z();
 
-    //set the velocity
-    odom.child_frame_id = "base_link";
-    odom.twist.twist.linear.x = 1;
-    odom.twist.twist.linear.y = 1;
-        odom.twist.twist.linear.z = 1;
-    odom.twist.twist.angular.x = 1;
-        odom.twist.twist.angular.y = 1;
-        odom.twist.twist.angular.z = 1;
+				//convert velocity quaterion to rpy
+				worldmodel::metric::datatypes::RPY rpy;
+				worldmodel::metric::operators::quatToRpy(rpy, self->velocities().rotation());
 
-        write(odom);
+				//set the velocity
+				odom.child_frame_id = "base_link";
+				odom.twist.twist.linear.x = self->velocities().translation().x();
+				odom.twist.twist.linear.y = self->velocities().translation().y();
+				odom.twist.twist.linear.z = self->velocities().translation().z();
+				odom.twist.twist.angular.x = rpy.roll();
+				odom.twist.twist.angular.y = rpy.pitch();
+				odom.twist.twist.angular.z = rpy.yaw();
 
+				write(odom);
 		   	}
 		}
-		
 
-		MOD_INFO("Talker once called");
-
-
+		//MOD_INFO("Talker once called");
     }
 
     return retval;
 }
-
-
-void Talker::navdata2Callback(const std::shared_ptr<rctamagic::NAVDATA2 const> & msg) {  
-	my_navdata2 = *msg; 
-	MOD_INFO("NAVDATA recieved");
-
-	//Trasfer to ros msg and publish
-	nav_msgs::Odometry odom;
-    odom.header.stamp.sec = my_navdata2.gmtSec;
-	odom.header.stamp.nsec = my_navdata2.gmtMSec*1000;
-    odom.header.frame_id = "odom";
-
-    //set the position
-    odom.pose.pose.position.x = my_navdata2.tranAbs.x;
-    odom.pose.pose.position.y = my_navdata2.tranAbs.y;
-    odom.pose.pose.position.z = my_navdata2.tranAbs.z;
-    odom.pose.pose.orientation.w = my_navdata2.rotAbs.s;
-	odom.pose.pose.orientation.x = my_navdata2.rotAbs.x;
-	odom.pose.pose.orientation.y = my_navdata2.rotAbs.y;
-	odom.pose.pose.orientation.z = my_navdata2.rotAbs.z;
-
-    //set the velocity
-    odom.child_frame_id = "base_link";
-    odom.twist.twist.linear.x = my_navdata2.tranVel.x;
-    odom.twist.twist.linear.y = my_navdata2.tranVel.y;
-	odom.twist.twist.linear.z = my_navdata2.tranVel.z;
-    odom.twist.twist.angular.x = my_navdata2.rpyRates.r;
-	odom.twist.twist.angular.y = my_navdata2.rpyRates.p;
-	odom.twist.twist.angular.z = my_navdata2.rpyRates.y;
-
-	write(odom);
-
-	return; 
-}
-
-
 
 void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & msg) { 
 	my_hokdata = *msg; 
