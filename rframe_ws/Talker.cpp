@@ -242,7 +242,7 @@ int Talker::onOnce()
 				odom.pose.pose.position.x = self->absPose().translation().x();
 				odom.pose.pose.position.y = self->absPose().translation().y();
 				odom.pose.pose.position.z = self->absPose().translation().z();
-				odom.pose.pose.orientation.w = -self->absPose().rotation().w();
+				odom.pose.pose.orientation.w = self->absPose().rotation().w();
 				odom.pose.pose.orientation.x = 0; //self->absPose().rotation().x();
 				odom.pose.pose.orientation.y = 0; //self->absPose().rotation().y();
 				odom.pose.pose.orientation.z = -self->absPose().rotation().z();
