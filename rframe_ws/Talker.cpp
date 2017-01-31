@@ -292,7 +292,7 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
     scan.ranges.resize(num_readings);
     scan.intensities.resize(num_readings);
     for(unsigned int i = 0; i < num_readings; ++i){
-      scan.ranges[i] = my_hokdata.ranges[i];
+      scan.ranges[i] = my_hokdata.ranges[i]/1000;
       scan.intensities[i] = my_hokdata.intensities[i];
     }
 

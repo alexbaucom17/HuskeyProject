@@ -1,3 +1,5 @@
+<!-- Test file for husky -->
+
 <launch>
 
   <!-- start rframe communication -->
@@ -13,6 +15,6 @@
   <node name="behavior" pkg="husky" type="simpleBehavior.py" output="screen" />
 
   <!-- start rviz -->
-  <include file="$(find husky_viz)/launch/view_robot.launch"/>
+  <include file="$(find husky_viz)/launch/view_model.launch"/>
 
 </launch>
