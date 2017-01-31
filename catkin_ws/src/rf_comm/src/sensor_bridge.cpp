@@ -48,7 +48,7 @@ public:
 	new_msg.header.stamp = ros::Time::now();
 
 	//transform laser to point cloud
-	if(!listener_.waitForTransform(
+	/*if(!listener_.waitForTransform(
         new_msg.header.frame_id,
         "/base_link",
         new_msg.header.stamp + ros::Duration().fromSec(new_msg.ranges.size()*new_msg.time_increment),
@@ -58,10 +58,10 @@ public:
 
 	//publish pointcloud transform
     sensor_msgs::PointCloud cloud;
-    projector_.transformLaserScanToPointCloud("/base_link",new_msg,cloud,listener_);
+    projector_.transformLaserScanToPointCloud("/base_link",new_msg,cloud,listener_);*/
 	
 	//publish point cloud 
-    scan_pub_.publish(cloud);
+    scan_pub_.publish(new_msg);
   }
 
 private:
