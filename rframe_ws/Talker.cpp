@@ -242,10 +242,10 @@ int Talker::onOnce()
 				odom.pose.pose.position.x = self->absPose().translation().x();
 				odom.pose.pose.position.y = self->absPose().translation().y();
 				odom.pose.pose.position.z = self->absPose().translation().z();
-				odom.pose.pose.orientation.w = self->velocities().rotation().w();
-				odom.pose.pose.orientation.x = self->velocities().rotation().x();
-				odom.pose.pose.orientation.y = self->velocities().rotation().y();
-				odom.pose.pose.orientation.z = self->velocities().rotation().z();
+				odom.pose.pose.orientation.w = self->absPose().rotation().w();
+				odom.pose.pose.orientation.x = self->absPose().rotation().x();
+				odom.pose.pose.orientation.y = self->absPose().rotation().y();
+				odom.pose.pose.orientation.z = self->absPose().rotation().z();
 
 				//convert velocity quaterion to rpy
 				worldmodel::metric::datatypes::RPY rpy;
@@ -282,9 +282,9 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
     scan.header.stamp.sec = 0; //Need to be filled in by ROS probably?
 	scan.header.stamp.nsec = 0;
     scan.header.frame_id = "base_laser";
-    scan.angle_min = -(270/2) * (3.14159/360);
-    scan.angle_max = (270/2) * (3.14159/360);
-    scan.angle_increment = 0.25 * (3.14159/360); 
+    scan.angle_min = -(270/2) * (3.14159/180);
+    scan.angle_max = (270/2) * (3.14159/180);
+    scan.angle_increment = 0.25 * (3.14159/180); 
     scan.time_increment = (0.025) /1440; 
     scan.range_min = 0.1; 
     scan.range_max = 60.0;
