@@ -1,18 +1,29 @@
+<!-- File to launch all the main nodes to run husky -->
+
 <launch>
 
-  <!-- start rframe communication -->
-  <!--<node name="StartRframe" pkg="rf_comm" type="runRframe.py" output="screen" />-->
+   <!-- start sensor bridge -->
+  <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
-  <!-- start rviz -->
-  <include file="$(find husky_viz)/launch/view_robot.launch"/>
+  <!-- Run the map server -->
+  <arg name="map_file" default="$(find husky_navigation)/maps/levine_4th_full.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-  <!--- Run gmapping -->
-  <include file="$(find husky_navigation)/launch/gmapping.launch" />
+  <!--- Run AMCL -->
+  <!-- can initialize default parameters here -->
+  <arg name="initial_pose_x" default="0.0"/> 
+  <arg name="initial_pose_y" default="0.0"/> 
+  <arg name="initial_pose_a" default="0.0"/>
+  <include file="$(find husky_navigation)/launch/amcl.launch" >
+     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+     <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
 
   <!--- Run Move Base -->
   <include file="$(find husky_navigation)/launch/move_base.launch" />
 
-  <!-- start simple behavior -->
-  <node name="behavior" pkg="husky" type="simpleBehavior.py" output="screen" />
+  <!-- start rviz -->
+  <include file="$(find husky_viz)/launch/view_model.launch"/>
 
 </launch>

@@ -80,7 +80,7 @@ extern "C"
 Talker::Talker() : gotoWm("Talker")
 {
     // set module base parameters here
-    loopPeriod(1.0);
+    loopPeriod(0.1);
 }
 
 
@@ -281,7 +281,7 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
     sensor_msgs::LaserScan scan;
     scan.header.stamp.sec = 0; //Need to be filled in by ROS probably?
 	scan.header.stamp.nsec = 0;
-    scan.header.frame_id = "laser_frame";
+    scan.header.frame_id = "base_laser";
     scan.angle_min = -(270/2) * (3.14159/360);
     scan.angle_max = (270/2) * (3.14159/360);
     scan.angle_increment = 0.25 * (3.14159/360); 
