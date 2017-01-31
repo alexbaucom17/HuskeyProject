@@ -2,6 +2,9 @@
 #include "sensor_msgs/LaserScan.h"
 #include "nav_msgs/Odometry.h"
 #include "tf/transform_broadcaster.h"
+#include "tf/transform_listener.h"
+#include "laser_geometry/laser_geometry.h"
+#include "sensor_msgs/PointCloud.h"
 
 class SubscribeAndPublish
 {
@@ -43,7 +46,22 @@ public:
 	//Add ros time to header (assuming low latency here from rframe)
 	sensor_msgs::LaserScan new_msg = msg;
 	new_msg.header.stamp = ros::Time::now();
-    scan_pub_.publish(new_msg);
+
+	//transform laser to point cloud
+	if(!listener_.waitForTransform(
+        new_msg.header.frame_id,
+        "/base_link",
+        new_msg.header.stamp + ros::Duration().fromSec(new_msg.ranges.size()*new_msg.time_increment),
+        ros::Duration(1.0))){
+     return;
+     }
+
+	//publish pointcloud transform
+    sensor_msgs::PointCloud cloud;
+    projector_.transformLaserScanToPointCloud("/base_link",new_msg,cloud,listener_);
+	
+	//publish point cloud 
+    scan_pub_.publish(cloud);
   }
 
 private:
@@ -54,6 +72,8 @@ private:
   ros::Subscriber scan_sub_; 
   ros::Time current_time_;
   tf::TransformBroadcaster odom_broadcaster_;
+  laser_geometry::LaserProjection projector_;
+  tf::TransformListener listener_;
 
 
 };//End of class SubscribeAndPublish
