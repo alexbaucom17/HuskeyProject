@@ -242,10 +242,10 @@ int Talker::onOnce()
 				odom.pose.pose.position.x = self->absPose().translation().x();
 				odom.pose.pose.position.y = self->absPose().translation().y();
 				odom.pose.pose.position.z = self->absPose().translation().z();
-				odom.pose.pose.orientation.w = self->absPose().rotation().w();
-				odom.pose.pose.orientation.x = self->absPose().rotation().x();
-				odom.pose.pose.orientation.y = self->absPose().rotation().y();
-				odom.pose.pose.orientation.z = self->absPose().rotation().z();
+				odom.pose.pose.orientation.w = -self->absPose().rotation().w();
+				odom.pose.pose.orientation.x = 0; //self->absPose().rotation().x();
+				odom.pose.pose.orientation.y = 0; //self->absPose().rotation().y();
+				odom.pose.pose.orientation.z = -self->absPose().rotation().z();
 
 				//convert velocity quaterion to rpy
 				worldmodel::metric::datatypes::RPY rpy;
@@ -254,11 +254,11 @@ int Talker::onOnce()
 				//set the velocity
 				odom.child_frame_id = "base_link";
 				odom.twist.twist.linear.x = self->velocities().translation().x();
-				odom.twist.twist.linear.y = self->velocities().translation().y();
-				odom.twist.twist.linear.z = self->velocities().translation().z();
-				odom.twist.twist.angular.x = rpy.roll();
-				odom.twist.twist.angular.y = rpy.pitch();
-				odom.twist.twist.angular.z = rpy.yaw();
+				odom.twist.twist.linear.y = 0; //self->velocities().translation().y();
+				odom.twist.twist.linear.z = 0; //self->velocities().translation().z();
+				odom.twist.twist.angular.x = 0; //rpy.roll();
+				odom.twist.twist.angular.y = 0; //rpy.pitch();
+				odom.twist.twist.angular.z = -rpy.yaw();
 
 				write(odom);
 		   	}
