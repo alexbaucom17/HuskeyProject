@@ -133,13 +133,18 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ executable
 add_executable(image_converter src/image_converter.cpp)
-
+add_executable(color_detection src/color_detection.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(husky_vision_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(image_converter
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBS}
+)
+
+target_link_libraries(color_detection 
    ${catkin_LIBRARIES}
    ${OpenCV_LIBS}
 )
