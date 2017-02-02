@@ -32,8 +32,8 @@ public:
     odom_trans.header.stamp = ros::Time::now();
     odom_trans.header.frame_id = "odom";
     odom_trans.child_frame_id = "base_link";
-    odom_trans.transform.translation.x = msg.pose.pose.position.x;
-	odom_trans.transform.translation.y = msg.pose.pose.position.y;
+    odom_trans.transform.translation.x = msg.pose.pose.position.y; //re-flip odom for transform
+	odom_trans.transform.translation.y = -msg.pose.pose.position.x;
 	odom_trans.transform.translation.z = 0.0;
 	odom_trans.transform.rotation = msg.pose.pose.orientation;
 	//send the transform

@@ -238,18 +238,27 @@ int Talker::onOnce()
 				odom.header.stamp.nsec = 0;
 				odom.header.frame_id = "odom";
 
+				//convert orientatoin quaterion to rpy
+				worldmodel::metric::datatypes::RPY rpy_pos;
+				worldmodel::metric::datatypes::Quaternion quat_pos;
+				worldmodel::metric::operators::quatToRpy(rpy_pos, self->absPose().rotation());
+				//flip yaw rotation direction
+				rpy_pos.yaw(-rpy_pos.yaw());
+				//convert back to quaternion
+				worldmodel::metric::operators::rpyToQuat(quat_pos,rpy_pos);
+
 				//set the position
-				odom.pose.pose.position.x = self->absPose().translation().x();
-				odom.pose.pose.position.y = self->absPose().translation().y();
-				odom.pose.pose.position.z = self->absPose().translation().z();
-				odom.pose.pose.orientation.w = self->absPose().rotation().w();
+				odom.pose.pose.position.x = self->absPose().translation().y(); //rframe reports odom backwards 
+				odom.pose.pose.position.y = self->absPose().translation().x();
+				odom.pose.pose.position.z = 0;
+				odom.pose.pose.orientation.w = quat_pos.w();
 				odom.pose.pose.orientation.x = 0; //self->absPose().rotation().x();
 				odom.pose.pose.orientation.y = 0; //self->absPose().rotation().y();
-				odom.pose.pose.orientation.z = -self->absPose().rotation().z();
+				odom.pose.pose.orientation.z = quat_pos.z();
 
 				//convert velocity quaterion to rpy
-				worldmodel::metric::datatypes::RPY rpy;
-				worldmodel::metric::operators::quatToRpy(rpy, self->velocities().rotation());
+				worldmodel::metric::datatypes::RPY rpy_vel;
+				worldmodel::metric::operators::quatToRpy(rpy_vel, self->velocities().rotation());
 
 				//set the velocity
 				odom.child_frame_id = "base_link";
@@ -258,7 +267,7 @@ int Talker::onOnce()
 				odom.twist.twist.linear.z = 0; //self->velocities().translation().z();
 				odom.twist.twist.angular.x = 0; //rpy.roll();
 				odom.twist.twist.angular.y = 0; //rpy.pitch();
-				odom.twist.twist.angular.z = -rpy.yaw();
+				odom.twist.twist.angular.z = rpy_vel.yaw();
 
 				write(odom);
 		   	}
@@ -292,7 +301,7 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
     scan.ranges.resize(num_readings);
     scan.intensities.resize(num_readings);
     for(unsigned int i = 0; i < num_readings; ++i){
-      scan.ranges[i] = my_hokdata.ranges[i]/1000;
+      scan.ranges[i] = 0.001*my_hokdata.ranges[i];
       scan.intensities[i] = my_hokdata.intensities[i];
     }
 
