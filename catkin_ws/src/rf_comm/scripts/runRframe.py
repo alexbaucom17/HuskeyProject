@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-cfgname = "talker.cfg"
+cfgname = "huskyInterface.cfg"
 os.chdir("/opt/rframe/bin")
-cmd = "./rframe --config " + cfgname
+cmd = "./rframe_wmgui --config " + cfgname
 os.system(cmd)

@@ -2,7 +2,7 @@
 
 <launch>
 
-   <!-- start sensor bridge -->
+  <!-- start sensor bridge -->
   <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
   <!-- Run the map server -->
