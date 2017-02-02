@@ -301,8 +301,15 @@ void Talker::hokdataCallback(const std::shared_ptr<rctamagic::HOKDATA const> & m
     scan.ranges.resize(num_readings);
     scan.intensities.resize(num_readings);
     for(unsigned int i = 0; i < num_readings; ++i){
-      scan.ranges[i] = 0.001*my_hokdata.ranges[i];
-      scan.intensities[i] = my_hokdata.intensities[i];
+		if(my_hokdata.ranges[i] < 300) //300 mm or 0.3 m
+		{
+			scan.ranges[i] = 61.0; //"filter" by setting value to be larger than max range
+		}
+		else
+		{
+      		scan.ranges[i] = 0.001*my_hokdata.ranges[i];
+		}
+      	scan.intensities[i] = my_hokdata.intensities[i];
     }
 
 	write(scan);
