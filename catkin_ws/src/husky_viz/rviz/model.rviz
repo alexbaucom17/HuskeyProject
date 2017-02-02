@@ -169,7 +169,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /scan
+      Topic: /scan_filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -210,11 +210,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 45.587
+      Scale: 75.8113
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 6.95353
-      Y: 2.55092
+      X: 1.72576
+      Y: -0.492804
     Saved: ~
 Window Geometry:
   Displays:

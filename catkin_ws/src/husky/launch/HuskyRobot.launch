@@ -9,6 +9,11 @@
   <arg name="map_file" default="$(find husky_navigation)/maps/levine_4th_full.yaml"/>
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
+  <!-- Run scan filter -->
+  <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find husky_navigation)/config/laser_filter_params.yaml" />
+  </node>
+
   <!--- Run AMCL -->
   <!-- can initialize default parameters here -->
   <arg name="initial_pose_x" default="0.0"/> 
