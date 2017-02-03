@@ -124,9 +124,11 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
      rectangle(img_color, boundRect[selected[idx]], color, 2, 8, 0 );  
     
     //Distance & angle calculation
-
-
-    float distance = 1.1;
+    float f = 299.5;
+    float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
+    float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
+    float distance = float (Z_w1 + Z_w2)/2;
+    //printf("d=%2f \n",distance);
     float angle = 0.3;
     // publisher
     dist_msg.data = distance;
