@@ -1,6 +1,8 @@
 #include "color_detection.h"
 #include <sstream>
 #include <iostream>
+//#include <algorithm>
+//#include <iterator>
 
 using namespace cv;
 using namespace std;
@@ -15,6 +17,7 @@ ColorDetection::ColorDetection()
     // Publish Distance Data
     dist_pub = nh_.advertise<std_msgs::Float32>("distance", 100);
     angle_pub = nh_.advertise<std_msgs::Float32>("angle", 100);
+    detected_pub = nh_.advertise<std_msgs::Bool>("detected",100);
     namedWindow("Raw Frame");
   }
 
@@ -74,8 +77,8 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    circle(img_thresholded,Point(posX, posY),5,CV_RGB(255,0,0)); 
    
 
-   imshow("raw image", img_color);
-   imshow("mask_image", img_thresholded);
+   //imshow("raw image", img_color);
+   //imshow("mask_image", img_thresholded);
 
    
    //Calculate contours and boundingbox
@@ -85,47 +88,57 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
    vector<vector<Point> > contours_poly( contours.size() );
    vector<Rect> boundRect( contours.size() ); 
-    for( int i = 0; i < contours.size(); i++ )
-     { approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
-       boundRect[i] = boundingRect( Mat(contours_poly[i]) );
-     }
-
-
-  /// Draw polygonal contour + bonding rects + circles
-  Mat drawing = Mat::zeros( img_thresholded.size(), CV_8UC3 );
-  for( int i = 0; i< contours.size(); i++ )
-     {
-       Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-       drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
-       rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
-     }
-
-  /// Show in a window
-  namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  imshow( "Contours", drawing );
-
-  // Mat color_pixels;
-  // findNonZero(img_thresholded, color_pixels)
-  // Rect Min_Rect = boundingRect(color_pixels);
-  // rectangle(img_thresholded,
-   
-//    if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
-  //    cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
-
-    // Update GUI Window
-       waitKey(3);
+   vector<int> selected;
+   vector<int> area;
+   double ratio_max =2.0;
+   double ratio_min = 1.0;
+   int area_thresh = 100;   
     
-
+   for( int i = 0; i < contours.size(); i++ )
+     { 
+       approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
+       boundRect[i] = boundingRect( Mat(contours_poly[i]) );
+       double boundRect_ratio = double(boundRect[i].height) / double(boundRect[i].width);
+       int boundRect_area = boundRect[i].height * boundRect[i].width;
+      // printf ("blob[%d] - height=%d - width=%d -ratio = %i \n",i,boundRect[i].height, boundRect[i].width, boundRect_area);
+       if (boundRect_ratio>ratio_min && boundRect_ratio<ratio_max && boundRect_area > area_thresh)
+          { 
+           selected.push_back(i);
+           area.push_back(boundRect_area);
+          }
+     }
+    
+   if (selected.empty())
+   {
+     printf("I did not see the object \n");
+     // publisher
+     detected_msg.data = false; 
+     detected_pub.publish(detected_msg);    
+   }
+   else 
+   {
+     int idx = distance(area.begin(),max_element(area.begin(),area.end()));
+     //printf("idx=%i -select=%i \n",idx, selected[idx]);
+     Scalar color = Scalar(0, 128, 0);
+     //drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
+     rectangle(img_color, boundRect[selected[idx]], color, 2, 8, 0 );  
+    
+    //Distance & angle calculation
 
 
     float distance = 1.1;
     float angle = 0.3;
-    //publisher
+    // publisher
     dist_msg.data = distance;
     angle_msg.data = angle;
+    detected_msg.data = true;
     dist_pub.publish(dist_msg);
     angle_pub.publish(angle_msg);
+    detected_pub.publish(detected_msg);
     // Output modified video stream
    // image_pub_.publish(cv_ptr->toImageMsg());
   }
-
+   // Show window and update the GUI
+   imshow("husky_vision",img_color);
+   waitKey(3);
+}
