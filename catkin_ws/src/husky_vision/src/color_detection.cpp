@@ -1,48 +1,30 @@
-#include <ros/ros.h>
-#include "std_msgs/Float32.h"
+#include "color_detection.h"
 #include <sstream>
 #include <iostream>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <stdio.h>
-#include <stdlib.h>
-using namespace std;
-using namespace cv;
 
-static const std::string OPENCV_WINDOW = "Image window";
+using namespace cv;
+using namespace std;
 RNG rng(12345);
 
-class ImageConverter
+ColorDetection::ColorDetection()
+   : it_(nh_)
 {
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  image_transport::Subscriber image_sub_;
-  //image_transport::Publisher image_pub_;
-  ros::Publisher dist_pub;
-  std_msgs::Float32 dist_msg;  
-
-public:
-  ImageConverter()
-    : it_(nh_)
-  {
-    // Subscrive to input video feed and publish output video feed
+    // Subscribe
     image_sub_ = it_.subscribe("/AdonisRos/image", 1, 
-      &ImageConverter::imageCb, this);
-    //image_pub_ = it_.advertise("/image_converter/output_video", 1);
+      &ColorDetection::imageCb, this);
+    // Publish Distance Data
     dist_pub = nh_.advertise<std_msgs::Float32>("distance", 100);
-
-    namedWindow(OPENCV_WINDOW);
+    angle_pub = nh_.advertise<std_msgs::Float32>("angle", 100);
+    namedWindow("Raw Frame");
   }
 
-  ~ImageConverter()
+ColorDetection::~ColorDetection()
   {
-    destroyWindow(OPENCV_WINDOW);
+    image_sub_.shutdown();
+    destroyAllWindows();
   }
 
-  void imageCb(const sensor_msgs::ImageConstPtr& msg)
+void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
     cv_bridge::CvImagePtr cv_ptr;
     try
@@ -77,10 +59,12 @@ public:
    dilate( img_thresholded, img_thresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
    erode(img_thresholded, img_thresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
    
+   
+   //Draw the center of the barrel
    Moments oMoments = moments(img_thresholded);
-  double dM01 = oMoments.m01;
-  double dM10 = oMoments.m10;
-  double dArea = oMoments.m00;
+   double dM01 = oMoments.m01;
+   double dM10 = oMoments.m10;
+   double dArea = oMoments.m00;
 
    // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
 
@@ -91,9 +75,10 @@ public:
    
 
    imshow("raw image", img_color);
-    imshow(OPENCV_WINDOW, img_thresholded);
+   imshow("mask_image", img_thresholded);
 
-
+   
+   //Calculate contours and boundingbox
    vector<vector<Point> > contours;
    vector<Vec4i> hierarchy;
    findContours(img_thresholded,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,Point(0,0));
@@ -134,18 +119,13 @@ public:
 
 
     float distance = 1.1;
+    float angle = 0.3;
     //publisher
     dist_msg.data = distance;
+    angle_msg.data = angle;
     dist_pub.publish(dist_msg);
+    angle_pub.publish(angle_msg);
     // Output modified video stream
    // image_pub_.publish(cv_ptr->toImageMsg());
   }
-};
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "image_converter");
-  ImageConverter ic;
-  ros::spin();
-  return 0;
-}

@@ -103,10 +103,10 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES husky_vision
-#  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs
-#  DEPENDS system_lib
+   INCLUDE_DIRS include
+   LIBRARIES husky_vision
+   CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs
+   DEPENDS ${OpenCV_LIBRARIES}
 )
 
 ###########
@@ -121,10 +121,12 @@ include_directories(
 )
 
 include_directories(${OpenCV_INCLUDE_DIRS})
+
 ## Declare a C++ library
-# add_library(husky_vision
-#   src/${PROJECT_NAME}/husky_vision.cpp
-# )
+#add_library(husky_vision
+#   src/color_detection_node.cpp
+#   src/image_converter.cpp
+#)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -133,7 +135,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ executable
 add_executable(image_converter src/image_converter.cpp)
-add_executable(color_detection src/color_detection.cpp)
+add_executable(color_detection_node src/color_detection.cpp src/color_detection_node.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(husky_vision_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -144,7 +146,7 @@ target_link_libraries(image_converter
    ${OpenCV_LIBS}
 )
 
-target_link_libraries(color_detection 
+target_link_libraries(color_detection_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBS}
 )
