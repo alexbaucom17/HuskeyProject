@@ -42,20 +42,20 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 
    /*******************DETECTION CODE***********************/
-   int H_min;// = 166;
-   int H_max; //= 179;
+   int H_min = 168;;// = 166;
+   int H_max = 179; //= 179;
    int S_min;// = 101;
-   int S_max;// = 255;
-   int V_min;// = 40;
-   int V_max;// = 255;
+   int S_max = 255;
+   int V_min = 80; //40
+   int V_max = 255;
    
    namedWindow("Control", CV_WINDOW_AUTOSIZE);
-   cvCreateTrackbar("LowH","Control",&H_min,179);
-   cvCreateTrackbar("HighH","Control",&H_max,179);
+   //cvCreateTrackbar("LowH","Control",&H_min,179);
+   //cvCreateTrackbar("HighH","Control",&H_max,179);
    cvCreateTrackbar("LowS","Control",&S_min,255);
-   cvCreateTrackbar("HighS","Control",&S_max,255);
-   cvCreateTrackbar("LowV","Control",&V_min,255);
-   cvCreateTrackbar("HighV","Control",&V_max,255);
+   //cvCreateTrackbar("HighS","Control",&S_max,255);
+   //cvCreateTrackbar("LowV","Control",&V_min,255);
+   //cvCreateTrackbar("HighV","Control",&V_max,255);
 
    Mat img_color = cv_ptr->image;
    Mat img_hsv;
@@ -71,21 +71,6 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    erode(img_thresholded, img_thresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
    
    
-   //Draw the center of the barrel
-   Moments oMoments = moments(img_thresholded);
-   double dM01 = oMoments.m01;
-   double dM10 = oMoments.m10;
-   double dArea = oMoments.m00;
-
-   // if the area <= 10000, I consider that the there are no object in the image and it's because of the noise, the area is not zero 
-
-   //calculate the position of the ball
-   int posX = dM10 / dArea;
-   int posY = dM01 / dArea;        
-   //circle(img_thresholded,Point(posX, posY),5,CV_RGB(255,0,0)); 
-   
-
-   //imshow("raw image", img_color);
    //imshow("mask_image", img_thresholded);
 
    
@@ -130,13 +115,20 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
      Scalar color = Scalar(0, 128, 0);
      //drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
      rectangle(img_color, boundRect[selected[idx]], color, 2, 8, 0 );  
-     circle(img_color,Point(posX, posY),5,CV_RGB(255,0,0));
+     //Calculate the centroid
+     Moments oMoments = moments(contours_poly[selected[idx]]);
+     double dM01 = oMoments.m01;
+     double dM10 = oMoments.m10;
+     double dArea = oMoments.m00;
+     int posX = dM10 / dArea;
+     int posY = dM01 / dArea;
+     circle(img_color,Point(posX, posY),3,CV_RGB(255,255,255));
     //Distance & angle calculation
     float f = 299.5;
     float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
     float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
     float distance = float (Z_w1 + Z_w2)/2;
-    printf("d=%2f \n",distance);
+    printf("x=%i, y=%i \n",posX, posY);
     float angle = 0.3;
     // publisher
     dist_msg.data = distance;
