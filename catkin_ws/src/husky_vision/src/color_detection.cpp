@@ -42,12 +42,20 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 
    /*******************DETECTION CODE***********************/
-   int H_min = 166;
-   int H_max = 179;
-   int S_min = 101;
-   int S_max = 255;
-   int V_min = 40;
-   int V_max = 255;
+   int H_min;// = 166;
+   int H_max; //= 179;
+   int S_min;// = 101;
+   int S_max;// = 255;
+   int V_min;// = 40;
+   int V_max;// = 255;
+   
+   namedWindow("Control", CV_WINDOW_AUTOSIZE);
+   cvCreateTrackbar("LowH","Control",&H_min,179);
+   cvCreateTrackbar("HighH","Control",&H_max,179);
+   cvCreateTrackbar("LowS","Control",&S_min,255);
+   cvCreateTrackbar("HighS","Control",&S_max,255);
+   cvCreateTrackbar("LowV","Control",&V_min,255);
+   cvCreateTrackbar("HighV","Control",&V_max,255);
 
    Mat img_color = cv_ptr->image;
    Mat img_hsv;
@@ -74,7 +82,7 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    //calculate the position of the ball
    int posX = dM10 / dArea;
    int posY = dM01 / dArea;        
-   circle(img_thresholded,Point(posX, posY),5,CV_RGB(255,0,0)); 
+   //circle(img_thresholded,Point(posX, posY),5,CV_RGB(255,0,0)); 
    
 
    //imshow("raw image", img_color);
@@ -90,9 +98,9 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    vector<Rect> boundRect( contours.size() ); 
    vector<int> selected;
    vector<int> area;
-   double ratio_max =2.0;
+   double ratio_max =3.0;
    double ratio_min = 1.0;
-   int area_thresh = 100;   
+   int area_thresh = 50;   
     
    for( int i = 0; i < contours.size(); i++ )
      { 
@@ -122,13 +130,13 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
      Scalar color = Scalar(0, 128, 0);
      //drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
      rectangle(img_color, boundRect[selected[idx]], color, 2, 8, 0 );  
-    
+     circle(img_color,Point(posX, posY),5,CV_RGB(255,0,0));
     //Distance & angle calculation
     float f = 299.5;
     float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
     float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
     float distance = float (Z_w1 + Z_w2)/2;
-    //printf("d=%2f \n",distance);
+    printf("d=%2f \n",distance);
     float angle = 0.3;
     // publisher
     dist_msg.data = distance;
