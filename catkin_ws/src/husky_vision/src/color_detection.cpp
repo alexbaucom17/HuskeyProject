@@ -18,7 +18,6 @@ ColorDetection::ColorDetection()
     dist_pub = nh_.advertise<std_msgs::Float32>("distance", 100);
     angle_pub = nh_.advertise<std_msgs::Float32>("angle", 100);
     detected_pub = nh_.advertise<std_msgs::Bool>("detected",100);
-    namedWindow("Raw Frame");
   }
 
 ColorDetection::~ColorDetection()
@@ -69,8 +68,6 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    //morphological closing (fill small holes in the foreground)
    dilate( img_thresholded, img_thresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
    erode(img_thresholded, img_thresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-   
-   
    //imshow("mask_image", img_thresholded);
 
    
@@ -111,11 +108,11 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
    else 
    {
      int idx = distance(area.begin(),max_element(area.begin(),area.end()));
-     //printf("idx=%i -select=%i \n",idx, selected[idx]);
+     // printf("idx=%i -select=%i \n",idx, selected[idx]);
      Scalar color = Scalar(0, 128, 0);
-     //drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
+     // drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
      rectangle(img_color, boundRect[selected[idx]], color, 2, 8, 0 );  
-     //Calculate the centroid
+     // Calculate the centroid
      Moments oMoments = moments(contours_poly[selected[idx]]);
      double dM01 = oMoments.m01;
      double dM10 = oMoments.m10;
@@ -123,22 +120,22 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
      int posX = dM10 / dArea;
      int posY = dM01 / dArea;
      circle(img_color,Point(posX, posY),3,CV_RGB(255,255,255));
-    //Distance & angle calculation
-    float f = 299.5;
-    float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
-    float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
-    float distance = float (Z_w1 + Z_w2)/2;
-    printf("x=%i, y=%i \n",posX, posY);
-    float angle = 0.3;
-    // publisher
-    dist_msg.data = distance;
-    angle_msg.data = angle;
-    detected_msg.data = true;
-    dist_pub.publish(dist_msg);
-    angle_pub.publish(angle_msg);
-    detected_pub.publish(detected_msg);
+     // Distance & angle calculation
+     float f = 299.5;
+     float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
+     float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
+     float distance = float (Z_w1 + Z_w2)/2;
+     printf("x=%i, y=%i \n",posX, posY);
+     float angle = 0.3;
+     // publisher
+     dist_msg.data = distance;
+     angle_msg.data = angle;
+     detected_msg.data = true;
+     dist_pub.publish(dist_msg);
+     angle_pub.publish(angle_msg);
+     detected_pub.publish(detected_msg);
     // Output modified video stream
-   // image_pub_.publish(cv_ptr->toImageMsg());
+    // image_pub_.publish(cv_ptr->toImageMsg());
   }
    // Show window and update the GUI
    imshow("husky_vision",img_color);
