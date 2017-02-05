@@ -4,7 +4,7 @@ import tf
 import actionlib
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseResult
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from std_msgs.msg import float32
+from std_msgs.msg import Float32
 
 dist = 1
 angle = 0
@@ -28,11 +28,11 @@ def pose_callback(data):
 def run_node():
 	rospy.init_node('huskyBehvaior')
 	poseSub = rospy.Subscriber("amcl_pose",PoseWithCovarianceStamped,pose_callback)
-	distSub = rospy.Subscriber("distance",float32,dist_callback)
-	angleSub = rospy.Subscriber("angle",float32,angle_callback)
+	distSub = rospy.Subscriber("distance",Float32,dist_callback)
+	angleSub = rospy.Subscriber("angle",Float32,angle_callback)
 	mb_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
 	mb_client.wait_for_server() 
-	r = rospy.rate(1.0)
+	r = rospy.Rate(1.0)
 
 	while not rospy.is_shutdown():	
 
