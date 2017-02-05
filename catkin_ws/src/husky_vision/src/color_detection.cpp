@@ -6,7 +6,8 @@
 
 using namespace cv;
 using namespace std;
-RNG rng(12345);
+
+
 
 ColorDetection::ColorDetection()
    : it_(nh_)
@@ -120,13 +121,20 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
      int posX = dM10 / dArea;
      int posY = dM01 / dArea;
      circle(img_color,Point(posX, posY),3,CV_RGB(255,255,255));
-     // Distance & angle calculation
-     float f = 299.5;
-     float Z_w1 = f/boundRect[selected[idx]].height * 0.57;
-     float Z_w2 = f/boundRect[selected[idx]].width * 0.40;
-     float distance = float (Z_w1 + Z_w2)/2;
-     printf("x=%i, y=%i \n",posX, posY);
-     float angle = 0.3;
+     // Distance calculation
+     const float f = 299.5;
+     const float Barrel_Height = 0.57;
+     const float Barrel_Width = 0.40;
+     float Z_w1 = f/boundRect[selected[idx]].height * Barrel_Height;
+     float Z_w2 = f/boundRect[selected[idx]].width * Barrel_Width;
+     float distance = (Z_w1 + Z_w2)/2;
+     // Angle calculation
+     const int fov_H = 120;
+     const int angle_offset = 14;
+     int cols = img_color.cols;
+     float angle_deg = float((posX - cols/2)*fov_H)/cols - angle_offset;
+     printf("Distance=%f, Angle=%f \n",distance,angle_deg);
+     float angle = angle_deg * M_PI / 180;
      // publisher
      dist_msg.data = distance;
      angle_msg.data = angle;

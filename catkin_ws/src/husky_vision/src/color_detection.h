@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <math.h>
 
 #include "std_msgs/Float32.h"
 #include "std_msgs/Bool.h"
