@@ -5,7 +5,7 @@ import actionlib
 import math
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseResult
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Bool
 
 #global vars
 dist = 1 #barrel distance (m)
@@ -15,12 +15,14 @@ barrel_global_old = None #initialize global name
 desired_dist = 1 #stop 1 m in front of barrel
 move_thresh = 1 #re-plan goal if barrel has moved more than this much
 circle_div = 10 #break circle into this many parts
+barrel_detected = False
 
+def detected_callback(data):
+	barrel_detected = data.data
 
 def angle_callback(data):
 	angle = data.data
 	rospy.loginfo("I got an angle")
-
 
 def dist_callback(data):
 	dist = data.data
@@ -62,6 +64,7 @@ def run_node():
 	rospy.init_node('huskyBehvaior')
 	distSub = rospy.Subscriber("distance",Float32,dist_callback)
 	angleSub = rospy.Subscriber("angle",Float32,angle_callback)
+	detectedSub = rospy.Subscriber("detected",Bool,detected_callback)
 	tf_listener = tf.TransformListener()
 	mb_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
 	mb_client.wait_for_server() 
@@ -70,7 +73,7 @@ def run_node():
 	while not rospy.is_shutdown():	
 
 		#check if we can see the barrel
-		if not dist == -1:
+		if barrel_detected:
 
 			#get desired pose and send goal if the barrel has moved
 			desired_pose = find_barrel_location()
