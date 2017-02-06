@@ -14,6 +14,7 @@ tf_listener = None #initialize global name
 barrel_global_old = None #initialize global name
 desired_dist = 1 #stop 1 m in front of barrel
 move_thresh = 1 #re-plan goal if barrel has moved more than this much
+circle_div = 10 #break circle into this many parts
 
 
 def angle_callback(data):
@@ -80,9 +81,22 @@ def run_node():
 				actionGoal.target_pose = desired_pose
 				actionGoal.target_pose.header.stamp = rospy.get_rostime()
 
-				#send goal - each time through this loop the newest goal will preempt the old one
+				#send goal
 				mb_client.send_goal(actionGoal)
-				rospy.loginfo("Goal sent")
+				rospy.loginfo("Goal sent [Barrel]")
+		else:
+				#spin in a circle if the barrel isn't detected
+				actionGoal = MoveBaseGoal()
+				actionGoal.target_pose.header.stamp = rospy.get_rostime()
+				actionGoal.target_pose.header.frame_id = "base_link"
+				quaternion = tf.transformations.quaternion_from_euler(0,0,2*math.pi/circle_div)
+				actionGoal.target_pose.pose.orientation.x = quaternion[0]
+				actionGoal.target_pose.pose.orientation.y = quaternion[1]
+				actionGoal.target_pose.pose.orientation.z = quaternion[2]
+				actionGoal.target_pose.pose.orientation.w = quaternion[3]
+				mb_client.send_goal(actionGoal)
+				rospy.loginfo("Goal sent [Circle]")
+			
 
 		#just sleep if there is nothing else to do
 		r.sleep()
