@@ -87,19 +87,35 @@ class husky_behavior_node():
 	if self.barrel_detected:
 
 	#get desired pose and send goal if the barrel has moved
-		desired_pose = self.find_barrel_location()
-		if desired_pose:
+		#desired_pose = self.find_barrel_location()
+		if True: #desired_pose:
+                        x = self.dist
+                        yaw = self.angle
+          		actionGoal = MoveBaseGoal()
+         		actionGoal.target_pose.header.frame_id = "base_link"
+                 	actionGoal.target_pose.header.stamp = rospy.get_rostime()
+          		actionGoal.target_pose.pose.position.x = x;
+ 		        quaternion = tf.transformations.quaternion_from_euler(0,0,yaw)
+         		actionGoal.target_pose.pose.orientation.x = quaternion[0]
+        	        actionGoal.target_pose.pose.orientation.y = quaternion[1]
+                 	actionGoal.target_pose.pose.orientation.z = quaternion[2]
+        		actionGoal.target_pose.pose.orientation.w = quaternion[3]
+ 
+ 		        #send goal - each time through this loop the newest goal will preempt the old one
+         		self.mb_client.send_goal(actionGoal)
+ 
+         		rospy.loginfo("Goal sent")
 
 			#Create goal message
-			actionGoal = MoveBaseGoal()
-			actionGoal.target_pose = desired_pose
-			actionGoal.target_pose.header.stamp = rospy.get_rostime()
+			#actionGoal = MoveBaseGoal()
+			#actionGoal.target_pose = desired_pose
+			#actionGoal.target_pose.header.stamp = rospy.get_rostime()
 
 			#send goal
-			self.mb_client.send_goal(actionGoal)
-			rospy.loginfo("Goal sent [Barrel]")
-		else:
-	              		#spin in a circle if the barrel isn't detected
+			#self.mb_client.send_goal(actionGoal)
+			#rospy.loginfo("Goal sent [Barrel]")
+	else:
+	                #spin in a circle if the barrel isn't detected
 			actionGoal = MoveBaseGoal()
 			actionGoal.target_pose.header.stamp = rospy.get_rostime()
 			actionGoal.target_pose.header.frame_id = "base_link"
