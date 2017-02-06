@@ -2,12 +2,19 @@
 import rospy 
 import tf
 import actionlib
+import math
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseResult
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 from std_msgs.msg import Float32
 
-dist = 1
-angle = 0
+#global vars
+dist = 1 #barrel distance (m)
+angle = 0 #barrel angle (rad)
+tf_listener = None #initialize global name
+barrel_global_old = None #initialize global name
+desired_dist = 1 #stop 1 m in front of barrel
+move_thresh = 1 #re-plan goal if barrel has moved more than this much
+
 
 def angle_callback(data):
 	angle = data.data
@@ -19,42 +26,65 @@ def dist_callback(data):
 	rospy.loginfo("I got a distance")
 
 
-def pose_callback(data):
-	#do something
-	rospy.loginfo("I got a pose")
+def find_barrel_location():
+	#assumes robot is moving slow enough that pose, dist, and angle are all still accurate
 
+	#build pose message to transform into map coordinates
+	barrel_local = PoseStamped()
+	barrel_local.header.frame_id = "base_link" #ideally should define camera link and use that
+	barrel_local.header.stamp = rospy.get_rostime()
+	barrel_local.pose.position.x = (dist-desired_dist)*math.sin(angle)
+	barrel_local.pose.position.y = (dist-desired_dist)*math.cos(angle) #put desired dist here for easy goal sending later
+	quaternion = tf.transformations.quaternion_from_euler(0,0,angle)
+	barrel_local.pose.orientation.x = quaternion[0]
+	barrel_local.pose.orientation.y = quaternion[1]
+	barrel_local.pose.orientation.z = quaternion[2]
+	barrel_local.pose.orientation.w = quaternion[3]
+
+	#get barrel location in the map frame
+	barrel_global = tf_listener.transformPose("/map", barrel_local)
+	
+	#figure out if the barrel has moved significantly
+	dx = barrel_global.point.x - barrel_global_old.point.x
+	dy = barrel_global.point.y - barrel_global_old.point.y
+	barrel_global_old = barrel_global
+
+	#send a new goal if the barrel has moved
+	if math.sqrt(dx**2 + dy**2) > move_thresh:
+		return barrel_global
+	else:
+		return None 
+	
 
 #run main behavior code
 def run_node():
 	rospy.init_node('huskyBehvaior')
-	poseSub = rospy.Subscriber("amcl_pose",PoseWithCovarianceStamped,pose_callback)
 	distSub = rospy.Subscriber("distance",Float32,dist_callback)
 	angleSub = rospy.Subscriber("angle",Float32,angle_callback)
+	tf_listener = tf.TransformListener()
 	mb_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
 	mb_client.wait_for_server() 
 	r = rospy.Rate(1.0)
 
 	while not rospy.is_shutdown():	
 
-		#do processing to deterine goal x and yaw
-		x = dist - 1.0 # stay 1 m away from object
-		yaw = angle # want to get barrel in front of camera
+		#check if we can see the barrel
+		if not dist == -1:
 
-		#Create goal message
-		actionGoal = MoveBaseGoal()
-		actionGoal.target_pose.header.frame_id = "base_link"
-		actionGoal.target_pose.header.stamp = rospy.get_rostime()
-		actionGoal.target_pose.pose.position.x = x;
-		quaternion = tf.transformations.quaternion_from_euler(0,0,yaw)
-		actionGoal.target_pose.pose.orientation.x = quaternion[0]
-		actionGoal.target_pose.pose.orientation.y = quaternion[1]
-		actionGoal.target_pose.pose.orientation.z = quaternion[2]
-		actionGoal.target_pose.pose.orientation.w = quaternion[3]
+			#get desired pose and send goal if the barrel has moved
+			desired_pose = find_barrel_location()
+			if desired_pose:
 
-		#send goal - each time through this loop the newest goal will preempt the old one
-		mb_client.send_goal(actionGoal)
+				#Create goal message
+				actionGoal = MoveBaseGoal()
+				actionGoal.target_pose = desired_pose
+				actionGoal.target_pose.header.stamp = rospy.get_rostime()
 
-		rospy.loginfo("Goal sent")
+				#send goal - each time through this loop the newest goal will preempt the old one
+				mb_client.send_goal(actionGoal)
+				rospy.loginfo("Goal sent")
+
+		#just sleep if there is nothing else to do
 		r.sleep()
 
 #execute main code
