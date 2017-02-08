@@ -26,7 +26,7 @@ class husky_behavior_node():
         self.angle = 0 #barrel angle (rad)
         #self.tf_listener = None #initialize global name
         self.barrel_global_old = None #initialize global name
-        self.desired_dist = 1 #stop 1 m in front of barrel
+        self.desired_dist = 2 #stop 1 m in front of barrel
         self.move_thresh = 1 #re-plan goal if barrel has moved more than this much
         self.circle_div = 10 #break circle into this many parts
         self.barrel_detected = False
@@ -89,8 +89,8 @@ class husky_behavior_node():
 	#get desired pose and send goal if the barrel has moved
 		#desired_pose = self.find_barrel_location()
 		if True: #desired_pose:
-                        x = self.dist
-                        yaw = self.angle
+                        x = self.dist - self.desired_dist
+                        yaw = -self.angle
           		actionGoal = MoveBaseGoal()
          		actionGoal.target_pose.header.frame_id = "base_link"
                  	actionGoal.target_pose.header.stamp = rospy.get_rostime()
@@ -124,7 +124,7 @@ class husky_behavior_node():
 			actionGoal.target_pose.pose.orientation.y = quaternion[1]
 			actionGoal.target_pose.pose.orientation.z = quaternion[2]
 			actionGoal.target_pose.pose.orientation.w = quaternion[3]
-			self.mb_client.send_goal(actionGoal)
+			#self.mb_client.send_goal(actionGoal)
 			rospy.loginfo("Goal sent [Circle]")
 	  		
 

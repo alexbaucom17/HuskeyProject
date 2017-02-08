@@ -42,19 +42,19 @@ void ColorDetection::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 
    /*******************DETECTION CODE***********************/
-   int H_min = 168;;// = 166;
+   int H_min; //= 168;;// = 166;
    int H_max = 179; //= 179;
    int S_min;// = 101;
    int S_max = 255;
-   int V_min = 80; //40
+   int V_min; //= 80; //40
    int V_max = 255;
    
    namedWindow("Control", CV_WINDOW_AUTOSIZE);
-   //cvCreateTrackbar("LowH","Control",&H_min,179);
+   cvCreateTrackbar("LowH","Control",&H_min,179);
    //cvCreateTrackbar("HighH","Control",&H_max,179);
    cvCreateTrackbar("LowS","Control",&S_min,255);
    //cvCreateTrackbar("HighS","Control",&S_max,255);
-   //cvCreateTrackbar("LowV","Control",&V_min,255);
+   cvCreateTrackbar("LowV","Control",&V_min,255);
    //cvCreateTrackbar("HighV","Control",&V_max,255);
 
    Mat img_color = cv_ptr->image;

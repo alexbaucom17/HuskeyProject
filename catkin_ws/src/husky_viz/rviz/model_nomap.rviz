@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Path1
       Splitter Ratio: 0.5
     Tree Height: 531
   - Class: rviz/Selection
@@ -174,6 +175,28 @@ Visualization Manager:
       Topic: /move_base/local_costmap/costmap
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 85; 255
+      Enabled: true
+      Head Diameter: 0.3
+      Head Length: 0.2
+      Length: 0.3
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Style: None
+      Radius: 0.03
+      Shaft Diameter: 0.1
+      Shaft Length: 0.1
+      Topic: /move_base/DWAPlannerROS/global_plan
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -204,8 +227,8 @@ Visualization Manager:
       Scale: 75.8113
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 1.72576
-      Y: -0.492804
+      X: 8.90974
+      Y: 0.0980203
     Saved: ~
 Window Geometry:
   Displays:
@@ -223,5 +246,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1301
-  X: 65
-  Y: 24
+  X: 55
+  Y: 14
