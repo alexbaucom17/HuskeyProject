@@ -6,7 +6,7 @@
   <node name="sensor_bridge" pkg="rf_comm" type="sensor_bridge" output="screen" />
 
   <!-- Run the map server -->
-  <arg name="map_file" default="$(find husky_navigation)/maps/levine_4th_full.yaml"/>
+  <arg name="map_file" default="$(find husky_navigation)/maps/husky_levine4th.yaml"/>
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- Run scan filter -->
